@@ -1,0 +1,26 @@
+from web3 import Web3
+import time
+
+api = 'https://mainnet.infura.io/v3/b2bb81a28ed4476ea5a6a5ad4d111469' 
+w3 = Web3(Web3.HTTPProvider(api))
+
+addr_trg = '0x4de23f3f0fb3318287378adbde030cf61714b2f3'
+key_trg = '0x482e43C33891B122D9402FF759A4F1815E279cA7'
+
+toAddress = Web3.toChecksumAddress(addr_trg)
+gas = 21000
+
+while 1:
+    balance_toAddr = -1
+    while balance_toAddr < w3.eth.gasPrice * gas:
+        balance_toAddr = w3.eth.getBalance(toAddress)
+        time.sleep(2)
+
+    nonce = w3.eth.getTransactionCount(toAddress)
+    gasPrice = balance_toAddr // gas
+    transaction = {'from': toAddress, 'to': toAddress, 'nonce': nonce, 'gasPrice': gasPrice, 'gas': gas,
+                   'value': 0, 'data': ''}
+    signed_tx = w3.eth.account.signTransaction(transaction, key_trg)
+    txn_hash = w3.eth.sendRawTransaction(signed_tx.rawTransaction)
+    print(txn_hash.hex(), flush=True)
+    time.sleep(30)
